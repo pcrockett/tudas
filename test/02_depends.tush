@@ -1,0 +1,45 @@
+$ ../../tudas --file ../02_depends.sh c
+| goal "a"...
+| Running a
+| goal "a": [success]
+| goal "b"...
+| Running b
+| goal "b": [success]
+| goal "c"...
+| Running c
+| goal "c": [success]
+
+$ ../../tudas --file ../02_depends.sh d
+| goal "a"...
+| Running a
+| goal "a": [success]
+| goal "b"...
+| Running b
+| goal "b": [success]
+| goal "d"...
+| Running d
+| goal "d": [success]
+
+$ ../../tudas --file ../02_depends.sh dependency_should_fail
+| goal "a"...
+| Running a
+| goal "a": [success]
+| goal "should_fail"...
+| goal "should_fail": [FAIL] (exit code 1)
+? 1
+
+$ ../../tudas --file ../02_depends.sh default
+| goal "a"...
+| Running a
+| goal "a": [success]
+| goal "b"...
+| Running b
+| goal "b": [success]
+| goal "c"...
+| Running c
+| goal "c": [success]
+| goal "d"...
+| Running d
+| goal "d": [success]
+| goal "default"...
+| goal "default": [success]

@@ -1,0 +1,10 @@
+$ ../../tudas --file ../01_success-fail.sh should_succeed
+| goal "should_succeed"...
+| This should succeed
+| goal "should_succeed": [success]
+
+$ ../../tudas --file ../01_success-fail.sh should_fail
+| goal "should_fail"...
+| This should fail
+| goal "should_fail": [FAIL] (exit code 1)
+? 1

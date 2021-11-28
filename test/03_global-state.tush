@@ -1,0 +1,7 @@
+$ ../../tudas --file ../03_global-state.sh
+| goal "modify_a"...
+| In this scope, A should be modified.
+| goal "modify_a": [success]
+| goal "default"...
+| In this scope, A should be UNmodified.
+| goal "default": [success]

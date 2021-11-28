@@ -2,7 +2,7 @@
 
 REPO_DIR=$(dirname "$(readlink -f "${0}")")
 
-@goal tush_downloaded @private
+@goal tush_downloaded
 @reached_if [ -d test/tush/.git ]
     cd test || exit 1
     test ! -d tush || rm --recursive tush

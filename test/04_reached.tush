@@ -1,0 +1,24 @@
+$ rm --force *.txt
+$ ../../tudas --file ../04_reached.sh default
+| goal "a"...
+| goal "a": [success]
+| goal "b"...
+| goal "b": [success]
+| goal "default"...
+| goal "default": [success]
+
+$ rm --force *.txt
+$ touch ./a.txt
+$ ../../tudas --file ../04_reached.sh default
+| goal "a": [already satisfied]
+| goal "b"...
+| goal "b": [success]
+| goal "default"...
+| goal "default": [success]
+
+$ rm *.txt
+$ touch ./b.txt
+$ ../../tudas --file ../04_reached.sh default
+| goal "b": [already satisfied]
+| goal "default"...
+| goal "default": [success]

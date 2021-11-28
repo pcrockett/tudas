@@ -1,0 +1,212 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+[[ "${BASH_VERSINFO[0]}" -lt 4 ]] && echo "Bash >= 4 required" && exit 1
+
+function show_usage() {
+    cat >&2 << EOF
+Usage: ${SCRIPT_NAME} [OPTION...]
+  -f, --file      
+  -v, --verbose   Display verbose messages
+  -h, --help      Show this help message then exit
+EOF
+}
+
+readonly DEPENDENCIES=()
+# SCRIPT_DIR=$(dirname "$(readlink -f "${0}")"); readonly SCRIPT_DIR
+SCRIPT_NAME=$(basename "${0}"); readonly SCRIPT_NAME
+readonly LOG_DEBUG="true"
+
+# Colors: https://stackoverflow.com/a/33206814
+readonly COLOR_OFF="\033[0m"
+readonly COLOR_GRAY="\033[37;2m"
+readonly COLOR_YELLOW="\033[1;33m"
+readonly COLOR_DKRED="\033[31;1m"
+readonly COLOR_ITALIC_RED="\033[31;1;3m"
+readonly COLOR_MAGENTA="\033[35m"
+readonly COLOR_PANIC="${COLOR_ITALIC_RED}"
+readonly COLOR_ERROR="${COLOR_DKRED}"
+readonly COLOR_WARNING="${COLOR_YELLOW}"
+readonly COLOR_INFO="${COLOR_OFF}"
+readonly COLOR_VERBOSE="${COLOR_GRAY}"
+readonly COLOR_DEBUG="${COLOR_MAGENTA}"
+
+function should_ignore_color() {
+
+    # Inspired by:
+    # https://github.com/kvz/bash3boilerplate/blob/9f06b1a8c668592e73f6f9a884776ed1e4a7e0fa/main.sh#L87
+
+    if [[ "${NO_COLOR:-}" = "true" ]]; then
+        return 0
+    elif [[ "${TERM:-}" != "xterm"* ]] && [[ "${TERM:-}" != "screen"* ]]; then
+        return 0
+    elif [[ ! -t 1 ]]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+function color_text() {
+
+    local color="${1}"
+    local color_reset="${COLOR_OFF}"
+
+    if should_ignore_color; then
+        color=""
+        color_reset=""
+    fi
+
+    shift 1
+    local message="${*}"
+    echo -e -n "${color}"
+    echo -n "${message}"
+    echo -e -n "${color_reset}"
+}
+
+function panic() {
+    # Prints a message like this:
+    #
+    # Fatal: Error message goes here!
+    #    Line 1234, my_script.sh
+    #
+    >&2 color_text "${COLOR_PANIC}" "Fatal: ${*}"
+    >&2 echo
+    >&2 color_text "${COLOR_PANIC}" "   Line $(caller)"
+    >&2 echo
+
+    # Do a "clean" exit with an error code
+    exit 1
+}
+
+function log_error() {
+    >&2 color_text "${COLOR_ERROR}" "ERROR: ${*}"
+    >&2 echo
+}
+
+function log_warning() {
+    color_text "${COLOR_WARNING}" "WARNING: ${*}"
+    echo
+}
+
+function log_info() {
+    color_text "${COLOR_INFO}" "${*}"
+    echo
+}
+
+function log_verbose() {
+    if [ "${ARG_VERBOSE:-}" = "true" ]; then
+        color_text "${COLOR_VERBOSE}" "verbose: ${*}"
+        echo
+    fi
+}
+
+function log_debug() {
+    if [ "${LOG_DEBUG}" = "true" ]; then
+        color_text "${COLOR_DEBUG}" "DEBUG: ${*}"
+        echo
+    fi
+}
+
+function cmd_is_installed() {
+    command -v "${1}" >/dev/null 2>&1
+}
+
+ARG_FILE=""
+
+function parse_commandline() {
+
+    while [ "${#}" -gt "0" ]; do
+        local consume=1
+
+        case "${1}" in
+            -f|--file)
+                if [ "${ARG_FILE}" != "" ]; then
+                    log_error "Should only specify the --file argument once."
+                    show_usage
+                    exit 1
+                fi
+                if [ "${#}" -le 1 ]; then
+                    log_error "No file specified."
+                    show_usage
+                    exit 1
+                fi
+                ARG_FILE="${2}"
+                consume=2
+            ;;
+            -v|--verbose)
+                ARG_VERBOSE="true"
+            ;;
+            -h|-\?|--help)
+                ARG_HELP="true"
+            ;;
+            *)
+                log_error "Unrecognized argument: ${1}"
+                show_usage
+                exit 1
+            ;;
+        esac
+
+        shift ${consume}
+    done
+
+    if [ "${ARG_FILE}" = "" ]; then
+        ARG_FILE="Tudasfile"
+    fi
+}
+
+parse_commandline "${@}"
+
+if [ "${ARG_HELP:-}" = "true" ]; then
+    show_usage
+    exit 0
+fi
+
+function cleanup_before_exit() {
+    log_verbose "Cleaning up before exit..."
+    # Add cleanup logic that runs every time your script exits
+    log_verbose "Finished cleaning up"
+}
+
+trap cleanup_before_exit EXIT
+
+function unexpected_error() {
+
+    local line_num="${1}"
+    local script_path="${2}"
+    local faulting_command="${3}"
+
+    local msg; msg=$(cat <<EOF
+Unexpected error at line ${line_num} ${script_path}:
+    Command: "${faulting_command}"
+EOF
+)
+    color_text "${COLOR_PANIC}" "${msg}"
+
+}
+
+trap 'unexpected_error ${LINENO} ${BASH_SOURCE[0]} ${BASH_COMMAND}' ERR   # Single-quotes are important, see https://unix.stackexchange.com/a/39660
+
+for dep in "${DEPENDENCIES[@]}"; do
+    cmd_is_installed "${dep}" || panic "Missing dependency \"${dep}\""
+done
+
+function process_line() {
+    test "${#}" -eq 1 || panic "Expecting 1 argument: line contents"
+    local line="${1}"
+}
+
+function process_file() {
+    test "${#}" -eq 1 || panic "Expecting 1 argument: file path"
+    local file_path="${1}"
+    while IFS= read -r line
+    do
+        process_line "${line}"
+    done < "${file_path}"
+}
+
+function main() {
+    process_file "${ARG_FILE}"
+}
+
+main

@@ -371,10 +371,15 @@ function main() {
     if [ "${ARG_COMPILE_ONLY:-}" = "true" ]; then
         compile_script
     else
+        local working_dir; working_dir="$(dirname "$(readlink -f "${ARG_FILE}")")"
+        pushd "${working_dir}" > /dev/null
         if compile_script | bash -s; then
+            popd > /dev/null
             exit 0
         else
-            exit ${?}
+            result=${?}
+            popd > /dev/null
+            exit ${result}
         fi
     fi
 }

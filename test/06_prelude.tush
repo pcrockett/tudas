@@ -6,6 +6,9 @@ $ ../../tudas --compile-only --file ../06_prelude.sh
 | # Comments should stay in the prelude.
 | __default_has_run=0
 | __goal_default() {
+|     if [ ${__default_has_run} -ne 0 ]; then
+|         return 0
+|     fi
 |     __default_has_run=1
 |     __default_reached() {
 |         false
@@ -16,7 +19,7 @@ $ ../../tudas --compile-only --file ../06_prelude.sh
 |     __default_body() {
 |         true
 |     }
-|     if __default_reached; then
+|     if (__default_reached); then
 |         echo "goal \"default\": [already satisfied]"
 |         return 0
 |     fi

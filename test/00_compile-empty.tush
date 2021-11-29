@@ -10,6 +10,9 @@ $ ../../tudas --compile-only --file ../00_compile-empty-goal.sh
 | 
 | __default_has_run=0
 | __goal_default() {
+|     if [ ${__default_has_run} -ne 0 ]; then
+|         return 0
+|     fi
 |     __default_has_run=1
 |     __default_reached() {
 |         false
@@ -20,7 +23,7 @@ $ ../../tudas --compile-only --file ../00_compile-empty-goal.sh
 |     __default_body() {
 |         true
 |     }
-|     if __default_reached; then
+|     if (__default_reached); then
 |         echo "goal \"default\": [already satisfied]"
 |         return 0
 |     fi

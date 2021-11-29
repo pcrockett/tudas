@@ -309,16 +309,20 @@ function compile_goal() {
     local dep_str="${_goal_dependencies[${goal_name}]}"
     IFS=" " read -r -a dep_split <<< "$(echo "${dep_str}" | tr --squeeze-repeats "[:space:]")"
 
-    local dependencies=()
+    local dependencies=""
     for dep in "${dep_split[@]}";
     do
         if [ "${dep}" != "" ]; then
-            dependencies+=("$(compile_dependency "${dep}")")
+            dependencies=$(cat << EOF
+${dependencies}
+        "__goal_${dep}"
+EOF
+)
         fi
     done
 
-    if [ "${#dependencies[@]}" -eq 0 ]; then
-        dependencies=("        true")
+    if [ "${dependencies}" = "" ]; then
+        dependencies="        true"
     fi
 
     # TODO: Validate dependencies
@@ -331,17 +335,20 @@ function compile_goal() {
     cat << EOF
 __${goal_name}_has_run=0
 __goal_${goal_name}() {
+    if [ \${__${goal_name}_has_run} -ne 0 ]; then
+        return 0
+    fi
     __${goal_name}_has_run=1
     __${goal_name}_reached() {
 ${reach_body}
     }
     __${goal_name}_deps() {
-${dependencies[@]}
+${dependencies}
     }
     __${goal_name}_body() {
 ${goal_body}
     }
-    if __${goal_name}_reached; then
+    if (__${goal_name}_reached); then
         echo "goal \"${goal_name}\": [already satisfied]"
         return 0
     fi
@@ -358,16 +365,6 @@ ${goal_body}
 }
 EOF
 
-}
-
-function compile_dependency() {
-    local dep_name="${1}"
-    cat << EOF
-
-if [ "\${__${dep_name}_has_run}" -eq 0 ]; then
-    "__goal_${dep_name}"
-fi
-EOF
 }
 
 function main() {

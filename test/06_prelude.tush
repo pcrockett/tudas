@@ -1,0 +1,34 @@
+$ ../../tudas --compile-only --file ../06_prelude.sh
+| #!/usr/bin/env bash
+| 
+| A=123
+| B=456
+| # Comments should stay in the prelude.
+| __goal_default_has_run=0
+| __goal_default() {
+|     __goal_default_has_run=1
+|     __goal_default_reached() {
+| false
+|     }
+|     __goal_default_deps() {
+| true
+|     }
+|     __goal_default_body() {
+| true
+|     }
+|     if __goal_default_reached; then
+|         echo "goal \"default\": [already satisfied]"
+|         return 0
+|     fi
+|     __goal_default_deps || return 1
+|     echo "goal \"default\"..."
+|     if (__goal_default_body); then
+|         echo "goal \"default\": [success]"
+|         return 0
+|     else
+|         result=${?}
+|         echo "goal \"default\": [FAIL] (exit code ${result})"
+|         exit ${result}
+|     fi
+| }
+| "__goal_default"

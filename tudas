@@ -211,7 +211,7 @@ _goals=()
 declare -A _goal_bodies
 declare -A _goal_dependencies
 declare -A _goal_reaches
-_prelude_body=()
+_prelude_body=""
 
 function new_goal() {
     test "${#}" -eq 1 || panic "Expecting 1 argument: goal name"
@@ -228,7 +228,7 @@ function process_line() {
     local line="${1}"
 
     # Trim whitespace at begin and end of the line
-    if [[ "${line}" =~ ^[[:space:]]*(![[:space:]]+)[[:space:]]*$ ]]; then
+    if [[ "${line}" =~ ^[[:space:]]*(.+)[[:space:]]*$ ]]; then
         line="${BASH_REMATCH[1]}"
     fi
 
@@ -252,7 +252,11 @@ function process_line() {
         local reach_script="${BASH_REMATCH[1]}"
         _goal_reaches["${_current_goal}"]="${reach_script}"
     elif [ "${_current_goal}" = "" ]; then
-        _prelude_body+=("${line}")
+        _prelude_body=$(cat << EOF
+${_prelude_body}
+${line}
+EOF
+)
     else
         local current_body="${_goal_bodies["${_current_goal}"]}"
         if [ "${current_body}" = "" ]; then
@@ -281,7 +285,7 @@ function compile_script() {
 
     cat << EOF
 #!/usr/bin/env bash
-${_prelude_body[@]}
+${_prelude_body}
 EOF
 
     for goal_name in "${_goals[@]}"
@@ -335,7 +339,7 @@ ${reach_body}
 ${dependencies[@]}
     }
     __goal_${goal_name}_body() {
-${goal_body[@]}
+${goal_body}
     }
     if __goal_${goal_name}_reached; then
         echo "goal \"${goal_name}\": [already satisfied]"

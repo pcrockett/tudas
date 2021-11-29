@@ -4,25 +4,25 @@ $ ../../tudas --compile-only --file ../06_prelude.sh
 | A=123
 | B=456
 | # Comments should stay in the prelude.
-| __goal_default_has_run=0
+| __default_has_run=0
 | __goal_default() {
-|     __goal_default_has_run=1
-|     __goal_default_reached() {
-| false
+|     __default_has_run=1
+|     __default_reached() {
+|         false
 |     }
-|     __goal_default_deps() {
-| true
+|     __default_deps() {
+|         true
 |     }
-|     __goal_default_body() {
-| true
+|     __default_body() {
+|         true
 |     }
-|     if __goal_default_reached; then
+|     if __default_reached; then
 |         echo "goal \"default\": [already satisfied]"
 |         return 0
 |     fi
-|     __goal_default_deps || return 1
+|     __default_deps || return 1
 |     echo "goal \"default\"..."
-|     if (__goal_default_body); then
+|     if (__default_body); then
 |         echo "goal \"default\": [success]"
 |         return 0
 |     else

@@ -260,11 +260,11 @@ EOF
     else
         local current_body="${_goal_bodies["${_current_goal}"]}"
         if [ "${current_body}" = "" ]; then
-            _goal_bodies["${_current_goal}"]="${line}"
+            _goal_bodies["${_current_goal}"]="        ${line}"
         else
             _goal_bodies["${_current_goal}"]=$(cat << EOF
 ${current_body}
-${line}
+        ${line}
 EOF
 )
         fi
@@ -303,7 +303,7 @@ function compile_goal() {
     local goal_name="${1}"
     local goal_body="${_goal_bodies[${goal_name}]}"
     if [ "${goal_body}" = "" ]; then
-        goal_body="true"
+        goal_body="        true"
     fi
 
     local dep_str="${_goal_dependencies[${goal_name}]}"
@@ -318,36 +318,36 @@ function compile_goal() {
     done
 
     if [ "${#dependencies[@]}" -eq 0 ]; then
-        dependencies=("true")
+        dependencies=("        true")
     fi
 
     # TODO: Validate dependencies
 
     local reach_body="${_goal_reaches[${goal_name}]}"
     if [ "${reach_body}" = "" ]; then
-        reach_body="false"
+        reach_body="        false"
     fi
 
     cat << EOF
-__goal_${goal_name}_has_run=0
+__${goal_name}_has_run=0
 __goal_${goal_name}() {
-    __goal_${goal_name}_has_run=1
-    __goal_${goal_name}_reached() {
+    __${goal_name}_has_run=1
+    __${goal_name}_reached() {
 ${reach_body}
     }
-    __goal_${goal_name}_deps() {
+    __${goal_name}_deps() {
 ${dependencies[@]}
     }
-    __goal_${goal_name}_body() {
+    __${goal_name}_body() {
 ${goal_body}
     }
-    if __goal_${goal_name}_reached; then
+    if __${goal_name}_reached; then
         echo "goal \"${goal_name}\": [already satisfied]"
         return 0
     fi
-    __goal_${goal_name}_deps || return 1
+    __${goal_name}_deps || return 1
     echo "goal \"${goal_name}\"..."
-    if (__goal_${goal_name}_body); then
+    if (__${goal_name}_body); then
         echo "goal \"${goal_name}\": [success]"
         return 0
     else
@@ -364,7 +364,7 @@ function compile_dependency() {
     local dep_name="${1}"
     cat << EOF
 
-if [ "\${__goal_${dep_name}_has_run}" -eq 0 ]; then
+if [ "\${__${dep_name}_has_run}" -eq 0 ]; then
     "__goal_${dep_name}"
 fi
 EOF

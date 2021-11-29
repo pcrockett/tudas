@@ -250,7 +250,7 @@ function process_line() {
         # TODO: Throw error if no current goal
         # TODO: Throw error if reach script is empty
         local reach_script="${BASH_REMATCH[1]}"
-        _goal_reaches["${_current_goal}"]="${reach_script}"
+        _goal_reaches["${_current_goal}"]="        ${reach_script}"
     elif [ "${_current_goal}" = "" ]; then
         _prelude_body=$(cat << EOF
 ${_prelude_body}

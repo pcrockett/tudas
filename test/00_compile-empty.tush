@@ -1,12 +1,14 @@
 
 $ ../../tudas --compile-only --file ../00_compile-empty.sh
 | #!/usr/bin/env bash
+| BASH_ARGV0="../00_compile-empty.sh"
 | 
 
 $ ../../tudas --file ../00_compile-empty.sh
 
 $ ../../tudas --compile-only --file ../00_compile-empty-goal.sh
 | #!/usr/bin/env bash
+| BASH_ARGV0="../00_compile-empty-goal.sh"
 | 
 | __default_has_run=0
 | __goal_default() {

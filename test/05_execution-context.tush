@@ -1,0 +1,8 @@
+$ ../../tudas --file ../05_execution-context.sh test_current_directory
+| goal "test_current_directory"...
+| goal "test_current_directory": [success]
+
+$ ../../tudas --file ../05_execution-context.sh test_script_name
+| goal "test_script_name"...
+| Executing Tudasfile is ../05_execution-context.sh
+| goal "test_script_name": [success]

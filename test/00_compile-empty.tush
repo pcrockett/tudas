@@ -1,10 +1,7 @@
 
 $ ../../tudas --compile-only --file ../00_compile-empty.sh
-| #!/usr/bin/env bash
-| BASH_ARGV0="../00_compile-empty.sh"
-| 
-
-$ ../../tudas --file ../00_compile-empty.sh
+@ ERROR: No goals defined in "../00_compile-empty.sh"
+? 1
 
 $ ../../tudas --compile-only --file ../00_compile-empty-goal.sh
 | #!/usr/bin/env bash

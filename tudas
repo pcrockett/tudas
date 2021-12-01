@@ -300,6 +300,22 @@ EOF
 
 }
 
+__get_dependencies_result=()
+function get_dependencies() {
+    local goal_name="${1}"
+
+    local dep_str="${_goal_dependencies[${goal_name}]}"
+    IFS=" " read -r -a dep_split <<< "$(echo "${dep_str}" | tr --squeeze-repeats "[:space:]")"
+
+    __get_dependencies_result=()
+    for dep in "${dep_split[@]}";
+    do
+        if [ "${dep}" != "" ]; then
+            __get_dependencies_result+=("${dep}")
+        fi
+    done
+}
+
 function compile_goal() {
     local goal_name="${1}"
     local goal_body="${_goal_bodies[${goal_name}]}"
@@ -311,15 +327,14 @@ function compile_goal() {
     IFS=" " read -r -a dep_split <<< "$(echo "${dep_str}" | tr --squeeze-repeats "[:space:]")"
 
     local dependencies=""
-    for dep in "${dep_split[@]}";
+    get_dependencies "${goal_name}"
+    for dep in "${__get_dependencies_result[@]}";
     do
-        if [ "${dep}" != "" ]; then
-            dependencies=$(cat << EOF
+        dependencies=$(cat << EOF
 ${dependencies}
         "__goal_${dep}"
 EOF
 )
-        fi
     done
 
     if [ "${dependencies}" = "" ]; then
@@ -368,8 +383,51 @@ EOF
 
 }
 
+function goal_exists() {
+    local goal_name="${1}"
+    for g in "${_goals[@]}"
+    do
+        if [ "${g}" = "${goal_name}" ]; then
+            return 0
+        fi
+    done
+
+    return 1
+}
+
+function check_errors() {
+
+    if [ "${#_goals[@]}" -lt 1 ]; then
+        log_error "No goals defined in \"${ARG_FILE}\""
+        exit 1
+    fi
+
+    if ! goal_exists "${ARG_GOAL}"; then
+        if [ "${ARG_GOAL}" = "default" ]; then
+            log_error "No default goal exists. You must explicitly specify a goal name."
+        else
+            log_error "No goal named \"${ARG_GOAL}\""
+        fi
+        exit 1
+    fi
+
+    for g in "${_goals[@]}"
+    do
+        get_dependencies "${g}"
+        for dep in "${__get_dependencies_result[@]}"
+        do
+            if ! goal_exists "${dep}"; then
+                log_error "@depends_on: No goal exists named \"${dep}\""
+                exit 1
+            fi
+        done
+    done
+}
+
 function main() {
     process_file "${ARG_FILE}"
+    check_errors
+
     if [ "${ARG_COMPILE_ONLY:-}" = "true" ]; then
         compile_script
     else

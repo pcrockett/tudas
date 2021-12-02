@@ -43,3 +43,14 @@ $ ../../tudas --file ../02_depends.sh default
 | goal "d": [success]
 | goal "default"...
 | goal "default": [success]
+
+$ ../../tudas --file ../02_depends.sh multiple_depends
+| goal "a"...
+| Running a
+| goal "a": [success]
+| goal "a2"...
+| Running a2
+| goal "a2": [success]
+| goal "multiple_depends"...
+| Running multiple_depends
+| goal "multiple_depends": [success]

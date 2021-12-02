@@ -235,7 +235,7 @@ function process_line() {
 
     if [[ "${line}" =~ ^@goal(.*)$ ]]; then
         local goal_name="${BASH_REMATCH[1]}"
-        if [[ "${goal_name}" =~ ^[[:space:]]+([a-zA-Z_\-]+)$ ]]; then
+        if [[ "${goal_name}" =~ ^[[:space:]]+([a-zA-Z_0-9\-]+)$ ]]; then
             goal_name="${BASH_REMATCH[1]}"
         else
             log_error "Invalid goal name: ${goal_name}"

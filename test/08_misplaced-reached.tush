@@ -1,0 +1,3 @@
+$ ../../tudas --file ../08_misplaced-reached.sh
+@ ERROR: Line 2: @reached_if not associated with any goal.
+? 1

@@ -1,0 +1,11 @@
+$ ../../tudas --file ../07_valid-syntax-bad-file.sh goal_does_not_exist
+@ ERROR: No goal named "goal_does_not_exist"
+? 1
+
+$ ../../tudas --file ../07_valid-syntax-bad-file.sh depends_on_invalid_goal
+@ ERROR: @depends_on: No goal exists named "goal_does_not_exist"
+? 1
+
+$ ../../tudas --file ../07_valid-syntax-bad-file.sh
+@ ERROR: No default goal exists. You must explicitly specify a goal name.
+? 1

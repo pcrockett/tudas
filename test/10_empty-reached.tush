@@ -1,0 +1,3 @@
+$ ../../tudas --file ../10_empty-reached.sh
+@ ERROR: Line 3: Empty @reached_if.
+? 1

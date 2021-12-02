@@ -1,0 +1,3 @@
+$ ../../tudas --file ../11_multiple-reached.sh
+@ ERROR: Line 4: @reached_if has already been defined for goal "default".
+? 1

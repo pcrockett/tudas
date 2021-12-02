@@ -1,0 +1,3 @@
+$ ../../tudas --file ../09_misplaced-depends.sh
+@ ERROR: Line 2: @depends_on not associated with any goal.
+? 1

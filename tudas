@@ -362,8 +362,6 @@ EOF
         dependencies="        true"
     fi
 
-    # TODO: Validate dependencies
-
     local reach_body="${_goal_reaches[${goal_name}]}"
     if [ "${reach_body}" = "" ]; then
         reach_body="        false"

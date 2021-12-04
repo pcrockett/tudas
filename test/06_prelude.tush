@@ -19,6 +19,7 @@ $ ../../tudas --compile-only --file ../06_prelude.sh
 |     }
 |     __default_body() {
 |         true
+|         true
 |     }
 |     if (__default_reached); then
 |         echo "goal \"default\": [already satisfied]"

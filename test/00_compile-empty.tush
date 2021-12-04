@@ -21,6 +21,9 @@ $ ../../tudas --compile-only --file ../00_compile-empty-goal.sh
 |     }
 |     __default_body() {
 |         true
+|         
+|         
+|         # Need to make sure _something_ is in the goal body besides this comment and blank lines
 |     }
 |     if (__default_reached); then
 |         echo "goal \"default\": [already satisfied]"

@@ -212,6 +212,7 @@ _goals=()
 declare -A _goal_bodies
 declare -A _goal_dependencies
 declare -A _goal_reaches
+_shell="bash"
 _prelude_body=""
 
 function new_goal() {
@@ -271,6 +272,11 @@ function process_line() {
         fi
 
         _goal_reaches["${_current_goal}"]="        ${reach_script}"
+    elif [[ "${line}" =~ ^@shell[[:space:]]+(.*)[[:space:]]*$ ]]; then
+        _shell="${BASH_REMATCH[1]}"
+        # TODO: Make sure we're in prelude
+        # TODO: Error if specified more than once
+        # TODO: Make sure shell not empty
     elif [ "${_current_goal}" = "" ]; then
         _prelude_body=$(cat << EOF
 ${_prelude_body}
@@ -305,7 +311,7 @@ function process_file() {
 function compile_script() {
 
     cat << EOF
-#!/usr/bin/env bash
+#!/usr/bin/env ${_shell}
 BASH_ARGV0="${ARG_FILE}"
 ${_prelude_body}
 EOF
@@ -367,6 +373,8 @@ EOF
         reach_body="        false"
     fi
 
+    # TODO: Handle empty goal body
+
     cat << EOF
 __${goal_name}_has_run=0
 __goal_${goal_name}() {
@@ -387,7 +395,7 @@ ${goal_body}
         echo "goal \"${goal_name}\": [already satisfied]"
         return 0
     fi
-    __${goal_name}_deps || return 1
+    __${goal_name}_deps || return \${?}
     echo "goal \"${goal_name}\"..."
     if (__${goal_name}_body); then
         echo "goal \"${goal_name}\": [success]"
@@ -452,7 +460,8 @@ function main() {
     else
         local working_dir; working_dir="$(dirname "$(readlink -f "${ARG_FILE}")")"
         pushd "${working_dir}" > /dev/null
-        if compile_script | bash -s; then
+
+        if compile_script | /usr/bin/env "${_shell}"; then
             popd > /dev/null
             exit 0
         else

@@ -1,0 +1,24 @@
+
+$ ../../tudas --file ../12_sh.sh fail_on_bash_syntax
+| goal "fail_on_bash_syntax"...
+| `foo:bar': not a valid identifier
+| goal "fail_on_bash_syntax": [success]
+
+Make sure basic features still work in `sh`:
+
+$ ../../tudas --file ../12_sh.sh depends_reached_test
+| goal "a"...
+| Running a
+| goal "a": [success]
+| goal "b"...
+| Running b
+| goal "b": [success]
+| goal "depends_reached_test"...
+| goal "depends_reached_test": [success]
+
+Make sure `sh` can see our custom `${0}` variable as well as `bash`
+
+$ ../../tudas --file ../12_sh.sh script_name
+| goal "script_name"...
+| ../12_sh.sh
+| goal "script_name": [success]

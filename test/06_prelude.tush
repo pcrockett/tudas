@@ -24,7 +24,7 @@ $ ../../tudas --compile-only --file ../06_prelude.sh
 |         echo "goal \"default\": [already satisfied]"
 |         return 0
 |     fi
-|     __default_deps || return 1
+|     __default_deps || return ${?}
 |     echo "goal \"default\"..."
 |     if (__default_body); then
 |         echo "goal \"default\": [success]"

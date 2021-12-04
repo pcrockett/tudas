@@ -3,23 +3,23 @@
 SCRIPT_NAME="${0}"
 
 should_fail() {
-    # ":" isn't valid in `sh`, so this should generate an error.
+    # ":" isn't valid in `sh`, so the following should generate an error:
     function foo:bar() {
         true
     }
 }
 
-@goal a
-@reached_if false
-    echo "Running a"
+@goal always_satisfied
+@reached_if true
+    # Cause goal to fail if the above @reached_if doesn't work correctly:
+    false
 
-@goal b
-@depends_on a
-    echo "Running b"
+@goal needy
+@depends_on always_satisfied
+    echo "Running a needy goal"
 
 @goal depends_reached_test
-@depends_on b
-    true
+@depends_on needy
 
 @goal script_name
     echo "${SCRIPT_NAME}"

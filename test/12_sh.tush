@@ -7,12 +7,10 @@ $ ../../tudas --file ../12_sh.sh fail_on_bash_syntax
 Make sure basic features still work in `sh`:
 
 $ ../../tudas --file ../12_sh.sh depends_reached_test
-| goal "a"...
-| Running a
-| goal "a": [success]
-| goal "b"...
-| Running b
-| goal "b": [success]
+| goal "always_satisfied": [already satisfied]
+| goal "needy"...
+| Running a needy goal
+| goal "needy": [success]
 | goal "depends_reached_test"...
 | goal "depends_reached_test": [success]
 

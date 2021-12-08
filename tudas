@@ -453,7 +453,11 @@ function list_goals() {
 
     for g in "${_goals[@]}"
     do
-        log_info "  ${g}"
+        if ! [[ "${g}" =~ ^_ ]]; then
+            # This goal does not start with an underscore, so it's public and
+            # therefore listable
+            log_info "  ${g}"
+        fi
     done
 
 }

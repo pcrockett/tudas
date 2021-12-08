@@ -3,7 +3,8 @@
 
 @goal b
 
-@goal a
+# Test private goal
+@goal _a
 
 @goal default
 

@@ -2,6 +2,5 @@ $ ../../tudas --file ../13_list.sh --list
 | Available goals:
 | 
 |   b
-|   a
 |   default
 |   c

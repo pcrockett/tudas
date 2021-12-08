@@ -2,14 +2,11 @@
 
 REPO_DIR=$(dirname "$(readlink -f "${0}")")
 
-@goal tush_downloaded
-@reached_if [ -d test/tush/.git ]
-    cd test || exit 1
-    test ! -d tush || rm --recursive tush
-    git clone https://github.com/darius/tush.git
+@goal default
+@depends_on test
 
 @goal test
-@depends_on tush_downloaded
+@depends_on _tush_downloaded
     cd test || exit 1
     PATH="${REPO_DIR}/test/tush/bin:${PATH}" \
         tush-check ./*.tush
@@ -17,5 +14,8 @@ REPO_DIR=$(dirname "$(readlink -f "${0}")")
 @goal clean
     rm --recursive --force test/tush
 
-@goal default
-@depends_on test
+@goal _tush_downloaded
+@reached_if [ -d test/tush/.git ]
+    cd test || exit 1
+    test ! -d tush || rm --recursive tush
+    git clone https://github.com/darius/tush.git

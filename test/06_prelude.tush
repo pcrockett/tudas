@@ -5,6 +5,19 @@ $ ../../tudas --compile-only --file ../06_prelude.sh
 | A=123
 | B=456
 | # Comments should stay in the prelude.
+|
+| C=$(cat << EOF
+| Here docs should
+|     have their
+|     indentation
+|     and
+|     tailing whitepaces    
+|     
+| and empty lines
+| 
+| preserved.
+| EOF
+| )
 | __default_has_run=0
 | __goal_default() {
 |     if [ ${__default_has_run} -ne 0 ]; then

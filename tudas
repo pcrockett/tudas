@@ -8,7 +8,8 @@ function show_usage() {
 Usage: ${SCRIPT_NAME} [OPTION...] [GOAL_NAME]
 
 Options:
-  -f, --file          Choose a different file than the default (./Tudasfile)
+  -l, --list          List the available goals in the file
+  -f, --file          Use a different file than the default (./Tudasfile)
   -c, --compile-only  Don't run - just print the compiled script
   -v, --verbose       Display verbose messages
   -h, --help          Show this help message then exit
@@ -124,6 +125,9 @@ function parse_commandline() {
         local consume=1
 
         case "${1}" in
+            -l|--list)
+                ARG_LIST="true"
+            ;;
             -f|--file)
                 if [ "${ARG_FILE}" != "" ]; then
                     log_error "Should only specify the --file argument once."
@@ -442,9 +446,26 @@ function check_errors() {
     done
 }
 
+function list_goals() {
+
+    log_info "Available goals:"
+    log_info ""
+
+    for g in "${_goals[@]}"
+    do
+        log_info "  ${g}"
+    done
+
+}
+
 function main() {
     process_file "${ARG_FILE}"
     check_errors
+
+    if [ "${ARG_LIST:-}" = "true" ]; then
+        list_goals
+        exit 0
+    fi
 
     if [ "${ARG_COMPILE_ONLY:-}" = "true" ]; then
         compile_script

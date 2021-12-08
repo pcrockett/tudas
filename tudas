@@ -281,6 +281,9 @@ function process_line() {
         # TODO: Make sure we're in prelude
         # TODO: Error if specified more than once
         # TODO: Make sure shell not empty
+    elif [[ "${line}" =~ ^@lib[[:space:]]*$ ]]; then
+        # Switch into "lib" mode
+        _current_goal=""
     elif [ "${_current_goal}" = "" ]; then
         _prelude_body=$(cat << EOF
 ${_prelude_body}

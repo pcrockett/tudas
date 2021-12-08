@@ -1,0 +1,15 @@
+$ ../../tudas --file ../14_lib.sh a
+| goal "a"...
+| Running a...
+| Function in prelude
+| Function after `a`
+| Function after `b`
+| goal "a": [success]
+
+$ ../../tudas --file ../14_lib.sh b
+| goal "b"...
+| Running b...
+| Function in prelude
+| Function after `a`
+| Function after `b`
+| goal "b": [success]

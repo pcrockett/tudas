@@ -1,0 +1,12 @@
+$ ../../tudas --file ../15_escaped-key-words.sh foo
+@ ERROR: No goal named "foo"
+? 1
+
+$ ../../tudas --file ../15_escaped-key-words.sh
+| goal "default"...
+| @goal foo
+| @reached_if
+| @depends_on
+| @lib
+|  @goal @reached_if @depends_on @lib
+| goal "default": [success]

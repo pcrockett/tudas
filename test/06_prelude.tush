@@ -5,19 +5,17 @@ $ ../../tudas --compile-only --file ../06_prelude.sh
 | A=123
 | B=456
 | # Comments should stay in the prelude.
-|
-| C=$(cat << EOF
-| Here docs should
+| 
+| C="Multi-line strings should
 |     have their
 |     indentation
 |     and
-|     tailing whitepaces    
+|     trailing whitepaces    
 |     
 | and empty lines
 | 
-| preserved.
-| EOF
-| )
+| preserved."
+| 
 | __default_has_run=0
 | __goal_default() {
 |     if [ ${__default_has_run} -ne 0 ]; then
@@ -32,7 +30,7 @@ $ ../../tudas --compile-only --file ../06_prelude.sh
 |     }
 |     __default_body() {
 |         true
-|         true
+|     true
 |     }
 |     if (__default_reached); then
 |         echo "goal \"default\": [already satisfied]"

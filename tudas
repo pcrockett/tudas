@@ -232,13 +232,14 @@ function new_goal() {
 function process_line() {
     test "${#}" -eq 1 || panic "Expecting 1 argument: line contents"
     local line="${1}"
+    local trimmed_line="${line}"
 
     # Trim whitespace at begin and end of the line
-    if [[ "${line}" =~ ^[[:space:]]*(.+)[[:space:]]*$ ]]; then
-        line="${BASH_REMATCH[1]}"
+    if [[ "${trimmed_line}" =~ ^[[:space:]]*(.+)[[:space:]]*$ ]]; then
+        trimmed_line="${BASH_REMATCH[1]}"
     fi
 
-    if [[ "${line}" =~ ^@goal(.*)$ ]]; then
+    if [[ "${trimmed_line}" =~ ^@goal(.*)$ ]]; then
         local goal_name="${BASH_REMATCH[1]}"
         if [[ "${goal_name}" =~ ^[[:space:]]+([a-zA-Z_0-9\-]+)$ ]]; then
             goal_name="${BASH_REMATCH[1]}"
@@ -247,7 +248,7 @@ function process_line() {
             exit 1
         fi
         new_goal "${goal_name}"
-    elif [[ "${line}" =~ ^@depends_on[[:space:]]+(.*)$ ]]; then
+    elif [[ "${trimmed_line}" =~ ^@depends_on[[:space:]]+(.*)$ ]]; then
 
         if [ "${_current_goal}" = "" ]; then
             log_error "Line ${_current_line}: @depends_on not associated with any goal."
@@ -257,7 +258,7 @@ function process_line() {
         local dep_list="${BASH_REMATCH[1]}"
         local existing_deps="${_goal_dependencies[${_current_goal}]}"
         _goal_dependencies["${_current_goal}"]="${existing_deps} ${dep_list}"
-    elif [[ "${line}" =~ ^@reached_if[[:space:]]+(.*)[[:space:]]*$ ]]; then
+    elif [[ "${trimmed_line}" =~ ^@reached_if[[:space:]]+(.*)$ ]]; then
 
         if [ "${_current_goal}" = "" ]; then
             log_error "Line ${_current_line}: @reached_if not associated with any goal."
@@ -276,27 +277,21 @@ function process_line() {
         fi
 
         _goal_reaches["${_current_goal}"]="        ${reach_script}"
-    elif [[ "${line}" =~ ^@shell[[:space:]]+(.*)[[:space:]]*$ ]]; then
+    elif [[ "${trimmed_line}" =~ ^@shell[[:space:]]+(.*)$ ]]; then
         _shell="${BASH_REMATCH[1]}"
         # TODO: Make sure we're in prelude
         # TODO: Error if specified more than once
         # TODO: Make sure shell not empty
-    elif [[ "${line}" =~ ^@lib[[:space:]]*$ ]]; then
+    elif [ "${trimmed_line}" = "@lib" ]; then
         # Switch into "lib" mode
         _current_goal=""
     elif [ "${_current_goal}" = "" ]; then
-        _prelude_body=$(cat << EOF
-${_prelude_body}
-${line}
-EOF
-)
+        _prelude_body="${_prelude_body}
+${line}"
     else
         local current_body="${_goal_bodies["${_current_goal}"]}"
-        _goal_bodies["${_current_goal}"]=$(cat << EOF
-${current_body}
-        ${line}
-EOF
-)
+        _goal_bodies["${_current_goal}"]="${current_body}
+${line}"
     fi
 
 }

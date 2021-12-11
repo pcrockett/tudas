@@ -1,3 +1,7 @@
-$ ../../tudas --file ../10_empty-reached.sh
-@ ERROR: Line 3: Empty @reached_if.
+$ ../../tudas --file ../10_empty-reached-1.sh
+@ ERROR: Line 4: Empty @reached_if.
+? 1
+
+$ ../../tudas --file ../10_empty-reached-2.sh
+@ ERROR: Line 4: Empty @reached_if.
 ? 1

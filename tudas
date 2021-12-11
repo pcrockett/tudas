@@ -258,7 +258,12 @@ function process_line() {
         local dep_list="${BASH_REMATCH[1]}"
         local existing_deps="${_goal_dependencies[${_current_goal}]}"
         _goal_dependencies["${_current_goal}"]="${existing_deps} ${dep_list}"
-    elif [[ "${trimmed_line}" =~ ^@reached_if[[:space:]]+(.*)$ ]]; then
+    elif [[ "${trimmed_line}" =~ ^@reached_if(.*)$ ]]; then
+
+        local reach_script="${BASH_REMATCH[1]}"
+        if [[ "${reach_script}" =~ [[:space:]]+(.*)$ ]]; then
+            reach_script="${BASH_REMATCH[1]}"
+        fi
 
         if [ "${_current_goal}" = "" ]; then
             log_error "Line ${_current_line}: @reached_if not associated with any goal."
@@ -270,7 +275,6 @@ function process_line() {
             exit 1
         fi
 
-        local reach_script="${BASH_REMATCH[1]}"
         if [ "${reach_script}" = "" ]; then
             log_error "Line ${_current_line}: Empty @reached_if."
             exit 1

@@ -1,0 +1,8 @@
+$ ../../tudas --file ../16_empty-depends-1.sh
+@ ERROR: Line 5: Empty @depends_on.
+? 1
+
+$ ../../tudas --file ../16_empty-depends-2.sh
+@ ERROR: Line 5: Empty @depends_on.
+? 1
+

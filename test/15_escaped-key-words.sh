@@ -1,3 +1,4 @@
+set -Eeuo pipefail
 
 @goal default
     cat << EOF
@@ -5,5 +6,5 @@
 \@reached_if
 \@depends_on
 \@lib
- \@goal \@reached_if \@depends_on \@lib
+ \@goal \@reached_if \@depends_on \@lib \@goal \@reached_if
 EOF

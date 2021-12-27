@@ -248,7 +248,7 @@ function process_line() {
             exit 1
         fi
         new_goal "${goal_name}"
-    elif [[ "${trimmed_line}" =~ ^@depends_on[[:space:]]+(.*)$ ]]; then
+    elif [[ "${trimmed_line}" =~ ^@depends_on[[:space:]]*(.*)$ ]]; then
 
         if [ "${_current_goal}" = "" ]; then
             log_error "Line ${_current_line}: @depends_on not associated with any goal."
@@ -256,6 +256,10 @@ function process_line() {
         fi
 
         local dep_list="${BASH_REMATCH[1]}"
+        if [ "${dep_list}" = "" ]; then
+            log_error "Line ${_current_line}: Empty @depends_on."
+            exit 1
+        fi
         local existing_deps="${_goal_dependencies[${_current_goal}]}"
         _goal_dependencies["${_current_goal}"]="${existing_deps} ${dep_list}"
     elif [[ "${trimmed_line}" =~ ^@reached_if(.*)$ ]]; then
@@ -293,6 +297,12 @@ function process_line() {
         _prelude_body="${_prelude_body}
 ${line}"
     else
+        # Replace escaped keywords, i.e. \@goal -> @goal
+        line="$(echo "${line}" \
+            | sed "s:\\\@goal:@goal:g" \
+            | sed "s:\\\@reached_if:@reached_if:g" \
+            | sed "s:\\\@depends_on:@depends_on:g" \
+            | sed "s:\\\@lib:@lib:g")"
         local current_body="${_goal_bodies["${_current_goal}"]}"
         _goal_bodies["${_current_goal}"]="${current_body}
 ${line}"

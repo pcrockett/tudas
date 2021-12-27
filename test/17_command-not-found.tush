@@ -1,0 +1,8 @@
+TODO: Find a simple way to test without hard-coding line numbers
+
+$ ../../tudas --file ../17_command-not-found.sh
+| goal "default"...
+| goal "default": [FAIL] (exit code 127)
+@ main: line 19: this_command_does_not_exist_68b638eee25f536a96c043c8e947b9b3: command not found
+? 127
+

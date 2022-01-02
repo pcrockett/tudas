@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-REPO_DIR=$(dirname "$(readlink -f "${0}")")
+REPO_DIR="$(readlink -f .)"
 
 @goal default
 @depends_on test
@@ -19,3 +19,4 @@ REPO_DIR=$(dirname "$(readlink -f "${0}")")
     cd test || exit 1
     test ! -d tush || rm --recursive tush
     git clone https://github.com/darius/tush.git
+

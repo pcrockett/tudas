@@ -380,6 +380,7 @@ function compile_script() {
 
     cat << EOF
 #!/usr/bin/env ${_shell}
+# shellcheck disable=2034
 BASH_ARGV0="${ARG_FILE}"
 ${_prelude_body}
 EOF

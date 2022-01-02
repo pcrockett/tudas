@@ -210,7 +210,9 @@ for dep in "${DEPENDENCIES[@]}"; do
     cmd_is_installed "${dep}" || panic "Missing dependency \"${dep}\""
 done
 
-_current_line=0
+_current_line=""
+_current_line_fields=()
+_current_line_num=0
 _current_goal=""
 _goals=()
 declare -A _goal_bodies
@@ -229,76 +231,85 @@ function new_goal() {
     _goal_reaches["${goal_name}"]=""
 }
 
-function process_line() {
-    test "${#}" -eq 1 || panic "Expecting 1 argument: line contents"
-    local line="${1}"
-    local trimmed_line="${line}"
-
-    # Trim whitespace at begin and end of the line
-    if [[ "${trimmed_line}" =~ ^[[:space:]]*(.+)[[:space:]]*$ ]]; then
-        trimmed_line="${BASH_REMATCH[1]}"
+function process_goal() {
+    if [ ${#} -lt 2 ]; then
+        log_error "Line ${_current_line_num}: No goal name specified."
+        exit 1
     fi
 
-    if [[ "${trimmed_line}" =~ ^@goal(.*)$ ]]; then
-        local goal_name="${BASH_REMATCH[1]}"
-        if [[ "${goal_name}" =~ ^[[:space:]]+([a-zA-Z_0-9\-]+)$ ]]; then
-            goal_name="${BASH_REMATCH[1]}"
-        else
-            log_error "Invalid goal name: ${goal_name}"
-            exit 1
-        fi
-        new_goal "${goal_name}"
-    elif [[ "${trimmed_line}" =~ ^@depends_on[[:space:]]*(.*)$ ]]; then
+    shift 1
 
-        if [ "${_current_goal}" = "" ]; then
-            log_error "Line ${_current_line}: @depends_on not associated with any goal."
-            exit 1
-        fi
+    local goal_name="${1}"
+    if ! [[ "${goal_name}" =~ ^[a-zA-Z_0-9\-]+$ ]]; then
+        log_error "Invalid goal name: \"${goal_name}\". Valid characters are A-Z, a-z, 0-9, -, _"
+        exit 1
+    fi
 
-        local dep_list="${BASH_REMATCH[1]}"
-        if [ "${dep_list}" = "" ]; then
-            log_error "Line ${_current_line}: Empty @depends_on."
-            exit 1
-        fi
-        local existing_deps="${_goal_dependencies[${_current_goal}]}"
-        _goal_dependencies["${_current_goal}"]="${existing_deps} ${dep_list}"
-    elif [[ "${trimmed_line}" =~ ^@reached_if(.*)$ ]]; then
+    # TODO: Make sure goal names don't start with `-` (avoid conflict with command line params)
 
-        local reach_script="${BASH_REMATCH[1]}"
-        if [[ "${reach_script}" =~ [[:space:]]+(.*)$ ]]; then
-            reach_script="${BASH_REMATCH[1]}"
-        fi
+    new_goal "${goal_name}"
+}
 
-        if [ "${_current_goal}" = "" ]; then
-            log_error "Line ${_current_line}: @reached_if not associated with any goal."
-            exit 1
-        fi
+function process_depends_on() {
+    if [ "${_current_goal}" = "" ]; then
+        log_error "Line ${_current_line_num}: @depends_on not associated with any goal."
+        exit 1
+    fi
 
-        if [ "${_goal_reaches[${_current_goal}]:-}" != "" ]; then
-            log_error "Line ${_current_line}: @reached_if has already been defined for goal \"${_current_goal}\"."
-            exit 1
-        fi
+    if [ ${#} -lt 2 ]; then
+        log_error "Line ${_current_line_num}: Empty @depends_on."
+        exit 1
+    fi
 
-        if [ "${reach_script}" = "" ]; then
-            log_error "Line ${_current_line}: Empty @reached_if."
-            exit 1
-        fi
+    shift 1
 
-        _goal_reaches["${_current_goal}"]="        ${reach_script}"
-    elif [[ "${trimmed_line}" =~ ^@shell[[:space:]]+(.*)$ ]]; then
-        _shell="${BASH_REMATCH[1]}"
-        # TODO: Make sure we're in prelude
-        # TODO: Error if specified more than once
-        # TODO: Make sure shell not empty
-    elif [ "${trimmed_line}" = "@lib" ]; then
-        # Switch into "lib" mode
-        _current_goal=""
-    elif [ "${_current_goal}" = "" ]; then
+    local existing_deps="${_goal_dependencies[${_current_goal}]}"
+    _goal_dependencies["${_current_goal}"]="${existing_deps} ${*}"
+}
+
+function process_reached_if() {
+    if [ "${_current_goal}" = "" ]; then
+        log_error "Line ${_current_line_num}: @reached_if not associated with any goal."
+        exit 1
+    fi
+
+    if [ ${#} -lt 2 ]; then
+        log_error "Line ${_current_line_num}: Empty @reached_if."
+        exit 1
+    fi
+
+    shift 1
+
+    if [ "${_goal_reaches[${_current_goal}]:-}" != "" ]; then
+        log_error "Line ${_current_line_num}: @reached_if has already been defined for goal \"${_current_goal}\"."
+        exit 1
+    fi
+
+    local reach_script="${*}"
+    _goal_reaches["${_current_goal}"]="        ${reach_script}"
+}
+
+function process_shell() {
+    _shell="${2}"
+    # TODO: Make sure we're in prelude
+    # TODO: Error if specified more than once
+    # TODO: Make sure shell not empty
+}
+
+function process_lib() {
+    # Switch into "lib" mode
+    _current_goal=""
+    # TODO: Make sure there's nothing after @lib
+}
+
+function process_code() {
+    if [ "${_current_goal}" = "" ]; then
         _prelude_body="${_prelude_body}
-${line}"
+${_current_line}"
     else
         # Replace escaped keywords, i.e. \@goal -> @goal
-        line="$(echo "${line}" \
+        local line
+        line="$(echo "${_current_line}" \
             | sed "s:\\\@goal:@goal:g" \
             | sed "s:\\\@reached_if:@reached_if:g" \
             | sed "s:\\\@depends_on:@depends_on:g" \
@@ -307,7 +318,42 @@ ${line}"
         _goal_bodies["${_current_goal}"]="${current_body}
 ${line}"
     fi
+}
 
+function process_line() {
+    test "${#}" -eq 1 || panic "Expecting 1 argument: line contents"
+    _current_line="${1}"
+
+    # Split the line into an array by whitespace.
+    local old_ifs="${IFS}"
+    unset IFS
+    read -ra _current_line_fields -d '' <<< "${_current_line}" || true # Exit code for `read` is usually 1
+    IFS="${old_ifs}"
+
+    if [ ${#_current_line_fields[@]} -gt 0 ]; then
+        case "${_current_line_fields[0]}" in
+            @goal)
+                process_goal "${_current_line_fields[@]}"
+            ;;
+            @depends_on)
+                process_depends_on "${_current_line_fields[@]}"
+            ;;
+            @reached_if)
+                process_reached_if "${_current_line_fields[@]}"
+            ;;
+            @shell)
+                process_shell "${_current_line_fields[@]}"
+            ;;
+            @lib)
+                process_lib "${_current_line_fields[@]}"
+            ;;
+            *)
+                process_code
+            ;;
+        esac
+    else
+        process_code
+    fi
 }
 
 function process_file() {
@@ -315,7 +361,7 @@ function process_file() {
     local file_path="${1}"
     while IFS= read -r line
     do
-        _current_line=$((_current_line + 1))
+        _current_line_num=$((_current_line_num + 1))
         process_line "${line}"
     done < "${file_path}"
 }
@@ -501,3 +547,4 @@ function main() {
 }
 
 main
+

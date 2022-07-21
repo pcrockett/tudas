@@ -1,6 +1,8 @@
 ## Tudas
 
-**Work in progress.**
+**This is an abandoned experiment. My next iteration of this is [IBHC](https://github.com/pcrockett/ibhc).**
+
+---
 
 Tudas is a simple minimalist command runner requiring no installation and no dependencies beyond basic Unix commands. Features and syntax inspired by [makesure][makesure], implementation inspired by [Taskfile][taskfile].
 
